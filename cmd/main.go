@@ -1,12 +1,17 @@
 package cmd
 
 import (
-	"fmt"
+	"net/http"
 
-	"github.com/spf13/viper"
+	"github.com/gin-gonic/gin"
 )
 
 func main() {
-	viper.GetString("")
-	fmt.Println("hello world")
+	r := gin.Default()
+	r.GET("/ping", func(c *gin.Context) {
+		c.JSON(http.StatusOK, gin.H{
+			"message": "pong",
+		})
+	})
+	r.Run(":8080")
 }
