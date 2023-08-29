@@ -1,9 +1,12 @@
 package auth
 
-import "context"
+import (
+	"context"
+	"language-learning/ent"
+)
 
 type Repository interface {
-	Get(ctx context.Context, username, passwordHash string) (interface{}, error)
+	Get(ctx context.Context, username, passwordHash string) (*ent.User, error)
 	Create(ctx context.Context, user interface{}) (int, error)
 }
 
