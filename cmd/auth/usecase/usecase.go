@@ -35,13 +35,8 @@ func (uc *Usecase) ParseToken(accessToken string) (*ent.User, error) {
 }
 
 func (uc *Usecase) GenerateToken(ctx context.Context, user *ent.User) (string, error) {
-	var username, password string
-	_, err := uc.repo.Get(ctx, username, password)
-	if err != nil {
-		return "", err
-	}
-
 	var accessToken string
+	var err error
 	if err != nil {
 		return "", err
 	}
