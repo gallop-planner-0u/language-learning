@@ -2,16 +2,23 @@ package repository
 
 import (
 	"context"
+	"language-learning/ent"
 )
 
 type Repository struct {
-	client interface{}
+	client *ent.Client
 }
 
-func New(client interface{}) *Repository {
+func New(client *ent.Client) *Repository {
 	return &Repository{
 		client: client,
 	}
 }
 
-func (r *Repository) Get(ctx context.Context, username, passwordHash string) (interface{}, error)
+func (r *Repository) Get(ctx context.Context, username, passwordHash string) (*ent.User, error) {
+	return nil, nil
+}
+
+func (r *Repository) Create(ctx context.Context, user *ent.User) (int, error) {
+	return 0, nil
+}
