@@ -2,8 +2,10 @@ package usecase
 
 import (
 	"context"
+	"fmt"
 	"language-learning/cmd/auth"
 	"language-learning/ent"
+	"language-learning/models"
 	"time"
 
 	"github.com/golang-jwt/jwt/v5"
@@ -39,8 +41,20 @@ func (uc *Usecase) SignIn(ctx context.Context, username, password string) (strin
 	return accessToken, nil
 }
 
-func (uc *Usecase) ParseToken(accessToken string) (*ent.User, error) {
-	return nil, nil
+func (uc *Usecase) ParseToken(accessToken string) (*models.CustomClaims, error) {
+	token, err := jwt.ParseWithClaims(accessToken, &models.CustomClaims{}, func(t *jwt.Token) (interface{}, error) {
+		if _, ok := t.Method.(*jwt.SigningMethodHMAC); !ok {
+			return nil, fmt.Errorf("Unexpected signing method: %v", t.Header["alg"])
+		}
+
+		return uc.signingKey, nil
+	})
+
+	if claims, ok := token.Claims.(*models.CustomClaims); ok && token.Valid {
+		return claims, nil
+	} else {
+		return nil, err
+	}
 }
 
 func (uc *Usecase) GenerateToken(ctx context.Context, user *ent.User) (string, error) {
