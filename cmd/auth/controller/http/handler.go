@@ -11,6 +11,12 @@ type Handler struct {
 	uc auth.Usecase
 }
 
+func New(uc auth.Usecase) *Handler {
+	return &Handler{
+		uc: uc,
+	}
+}
+
 func (h *Handler) SignUp(c *gin.Context) {
 	ctx := c.Request.Context()
 	_, err := h.uc.SignUp(ctx, nil)
