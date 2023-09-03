@@ -16,11 +16,6 @@ type Usecase struct {
 	signingKey string
 }
 
-type CustomClaims struct {
-	userID int
-	jwt.RegisteredClaims
-}
-
 func New(repo auth.Repository) *Usecase {
 	return &Usecase{
 		repo: repo,
@@ -58,8 +53,8 @@ func (uc *Usecase) ParseToken(accessToken string) (*models.CustomClaims, error) 
 }
 
 func (uc *Usecase) GenerateToken(ctx context.Context, user *ent.User) (string, error) {
-	claims := CustomClaims{
-		userID: user.ID,
+	claims := models.CustomClaims{
+		UserID: user.ID,
 		RegisteredClaims: jwt.RegisteredClaims{
 			ExpiresAt: jwt.NewNumericDate(time.Now().Add(time.Hour)),
 			IssuedAt:  jwt.NewNumericDate(time.Now()),
