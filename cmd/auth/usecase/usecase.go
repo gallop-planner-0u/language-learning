@@ -32,6 +32,10 @@ func (uc *Usecase) SignUp(ctx context.Context, user *ent.User) (int, error) {
 }
 
 func (uc *Usecase) SignIn(ctx context.Context, username, password string) (string, error) {
+	_sha256 := sha256.New()
+	_sha256.Write([]byte(uc.signingKey))
+	_sha256.Write([]byte(password))
+	password = string(_sha256.Sum(nil))
 	user, err := uc.repo.Get(ctx, username, password)
 	accessToken, err := uc.GenerateToken(ctx, user)
 	if err != nil {
