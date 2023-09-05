@@ -6,7 +6,6 @@ import (
 	authrepository "language-learning/cmd/auth/repository"
 	authusecase "language-learning/cmd/auth/usecase"
 	"language-learning/pkg"
-	"log"
 	"os"
 
 	"github.com/gin-gonic/gin"
@@ -20,7 +19,7 @@ func main() {
 	defer client.Close()
 
 	if err := client.Schema.Create(context.Background()); err != nil {
-		log.Fatal(err)
+		panic(err)
 	}
 
 	_authRepo := authrepository.New(client)
@@ -38,7 +37,7 @@ func InitConfig() {
 	viper.SetConfigType("yaml")
 	configPath := os.Getenv("CONFIG_PATH")
 	if configPath == "" {
-		configPath = "../config"
+		configPath = "/app/config"
 	}
 	viper.AddConfigPath(configPath)
 
