@@ -12,6 +12,6 @@ COPY --from=build /app/main /app/main
 COPY --from=build /app/config /app/config
 COPY --from=build /app/run.sh /app/run.sh
 RUN chmod +x /app/run.sh
-EXPOSE 8080
 USER postgres
+EXPOSE 8080
 CMD [ "/app/run.sh" ]
