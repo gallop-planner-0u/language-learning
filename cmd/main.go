@@ -17,13 +17,10 @@ import (
 )
 
 func main() {
+	ctx := context.Background()
 	InitConfig()
-	client := pkg.GetEntClient()
+	client := pkg.GetEntClient(ctx)
 	defer client.Close()
-
-	if err := client.Schema.Create(context.Background()); err != nil {
-		panic(err)
-	}
 
 	_authRepo := authrepository.New(client)
 	_authUsecase := authusecase.New(_authRepo)
