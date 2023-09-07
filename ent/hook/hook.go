@@ -8,6 +8,18 @@ import (
 	"language-learning/ent"
 )
 
+// The RecordFunc type is an adapter to allow the use of ordinary
+// function as Record mutator.
+type RecordFunc func(context.Context, *ent.RecordMutation) (ent.Value, error)
+
+// Mutate calls f(ctx, m).
+func (f RecordFunc) Mutate(ctx context.Context, m ent.Mutation) (ent.Value, error) {
+	if mv, ok := m.(*ent.RecordMutation); ok {
+		return f(ctx, mv)
+	}
+	return nil, fmt.Errorf("unexpected mutation type %T. expect *ent.RecordMutation", m)
+}
+
 // The UserFunc type is an adapter to allow the use of ordinary
 // function as User mutator.
 type UserFunc func(context.Context, *ent.UserMutation) (ent.Value, error)

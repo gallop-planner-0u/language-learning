@@ -10,6 +10,7 @@ import (
 
 	"language-learning/ent/migrate"
 
+	"language-learning/ent/record"
 	"language-learning/ent/user"
 
 	"entgo.io/ent"
@@ -22,6 +23,8 @@ type Client struct {
 	config
 	// Schema is the client for creating, migrating and dropping schema.
 	Schema *migrate.Schema
+	// Record is the client for interacting with the Record builders.
+	Record *RecordClient
 	// User is the client for interacting with the User builders.
 	User *UserClient
 }
@@ -37,6 +40,7 @@ func NewClient(opts ...Option) *Client {
 
 func (c *Client) init() {
 	c.Schema = migrate.NewSchema(c.driver)
+	c.Record = NewRecordClient(c.config)
 	c.User = NewUserClient(c.config)
 }
 
@@ -120,6 +124,7 @@ func (c *Client) Tx(ctx context.Context) (*Tx, error) {
 	return &Tx{
 		ctx:    ctx,
 		config: cfg,
+		Record: NewRecordClient(cfg),
 		User:   NewUserClient(cfg),
 	}, nil
 }
@@ -140,6 +145,7 @@ func (c *Client) BeginTx(ctx context.Context, opts *sql.TxOptions) (*Tx, error) 
 	return &Tx{
 		ctx:    ctx,
 		config: cfg,
+		Record: NewRecordClient(cfg),
 		User:   NewUserClient(cfg),
 	}, nil
 }
@@ -147,7 +153,7 @@ func (c *Client) BeginTx(ctx context.Context, opts *sql.TxOptions) (*Tx, error) 
 // Debug returns a new debug-client. It's used to get verbose logging on specific operations.
 //
 //	client.Debug().
-//		User.
+//		Record.
 //		Query().
 //		Count(ctx)
 func (c *Client) Debug() *Client {
@@ -169,22 +175,144 @@ func (c *Client) Close() error {
 // Use adds the mutation hooks to all the entity clients.
 // In order to add hooks to a specific client, call: `client.Node.Use(...)`.
 func (c *Client) Use(hooks ...Hook) {
+	c.Record.Use(hooks...)
 	c.User.Use(hooks...)
 }
 
 // Intercept adds the query interceptors to all the entity clients.
 // In order to add interceptors to a specific client, call: `client.Node.Intercept(...)`.
 func (c *Client) Intercept(interceptors ...Interceptor) {
+	c.Record.Intercept(interceptors...)
 	c.User.Intercept(interceptors...)
 }
 
 // Mutate implements the ent.Mutator interface.
 func (c *Client) Mutate(ctx context.Context, m Mutation) (Value, error) {
 	switch m := m.(type) {
+	case *RecordMutation:
+		return c.Record.mutate(ctx, m)
 	case *UserMutation:
 		return c.User.mutate(ctx, m)
 	default:
 		return nil, fmt.Errorf("ent: unknown mutation type %T", m)
+	}
+}
+
+// RecordClient is a client for the Record schema.
+type RecordClient struct {
+	config
+}
+
+// NewRecordClient returns a client for the Record from the given config.
+func NewRecordClient(c config) *RecordClient {
+	return &RecordClient{config: c}
+}
+
+// Use adds a list of mutation hooks to the hooks stack.
+// A call to `Use(f, g, h)` equals to `record.Hooks(f(g(h())))`.
+func (c *RecordClient) Use(hooks ...Hook) {
+	c.hooks.Record = append(c.hooks.Record, hooks...)
+}
+
+// Intercept adds a list of query interceptors to the interceptors stack.
+// A call to `Intercept(f, g, h)` equals to `record.Intercept(f(g(h())))`.
+func (c *RecordClient) Intercept(interceptors ...Interceptor) {
+	c.inters.Record = append(c.inters.Record, interceptors...)
+}
+
+// Create returns a builder for creating a Record entity.
+func (c *RecordClient) Create() *RecordCreate {
+	mutation := newRecordMutation(c.config, OpCreate)
+	return &RecordCreate{config: c.config, hooks: c.Hooks(), mutation: mutation}
+}
+
+// CreateBulk returns a builder for creating a bulk of Record entities.
+func (c *RecordClient) CreateBulk(builders ...*RecordCreate) *RecordCreateBulk {
+	return &RecordCreateBulk{config: c.config, builders: builders}
+}
+
+// Update returns an update builder for Record.
+func (c *RecordClient) Update() *RecordUpdate {
+	mutation := newRecordMutation(c.config, OpUpdate)
+	return &RecordUpdate{config: c.config, hooks: c.Hooks(), mutation: mutation}
+}
+
+// UpdateOne returns an update builder for the given entity.
+func (c *RecordClient) UpdateOne(r *Record) *RecordUpdateOne {
+	mutation := newRecordMutation(c.config, OpUpdateOne, withRecord(r))
+	return &RecordUpdateOne{config: c.config, hooks: c.Hooks(), mutation: mutation}
+}
+
+// UpdateOneID returns an update builder for the given id.
+func (c *RecordClient) UpdateOneID(id int) *RecordUpdateOne {
+	mutation := newRecordMutation(c.config, OpUpdateOne, withRecordID(id))
+	return &RecordUpdateOne{config: c.config, hooks: c.Hooks(), mutation: mutation}
+}
+
+// Delete returns a delete builder for Record.
+func (c *RecordClient) Delete() *RecordDelete {
+	mutation := newRecordMutation(c.config, OpDelete)
+	return &RecordDelete{config: c.config, hooks: c.Hooks(), mutation: mutation}
+}
+
+// DeleteOne returns a builder for deleting the given entity.
+func (c *RecordClient) DeleteOne(r *Record) *RecordDeleteOne {
+	return c.DeleteOneID(r.ID)
+}
+
+// DeleteOneID returns a builder for deleting the given entity by its id.
+func (c *RecordClient) DeleteOneID(id int) *RecordDeleteOne {
+	builder := c.Delete().Where(record.ID(id))
+	builder.mutation.id = &id
+	builder.mutation.op = OpDeleteOne
+	return &RecordDeleteOne{builder}
+}
+
+// Query returns a query builder for Record.
+func (c *RecordClient) Query() *RecordQuery {
+	return &RecordQuery{
+		config: c.config,
+		ctx:    &QueryContext{Type: TypeRecord},
+		inters: c.Interceptors(),
+	}
+}
+
+// Get returns a Record entity by its id.
+func (c *RecordClient) Get(ctx context.Context, id int) (*Record, error) {
+	return c.Query().Where(record.ID(id)).Only(ctx)
+}
+
+// GetX is like Get, but panics if an error occurs.
+func (c *RecordClient) GetX(ctx context.Context, id int) *Record {
+	obj, err := c.Get(ctx, id)
+	if err != nil {
+		panic(err)
+	}
+	return obj
+}
+
+// Hooks returns the client hooks.
+func (c *RecordClient) Hooks() []Hook {
+	return c.hooks.Record
+}
+
+// Interceptors returns the client interceptors.
+func (c *RecordClient) Interceptors() []Interceptor {
+	return c.inters.Record
+}
+
+func (c *RecordClient) mutate(ctx context.Context, m *RecordMutation) (Value, error) {
+	switch m.Op() {
+	case OpCreate:
+		return (&RecordCreate{config: c.config, hooks: c.Hooks(), mutation: m}).Save(ctx)
+	case OpUpdate:
+		return (&RecordUpdate{config: c.config, hooks: c.Hooks(), mutation: m}).Save(ctx)
+	case OpUpdateOne:
+		return (&RecordUpdateOne{config: c.config, hooks: c.Hooks(), mutation: m}).Save(ctx)
+	case OpDelete, OpDeleteOne:
+		return (&RecordDelete{config: c.config, hooks: c.Hooks(), mutation: m}).Exec(ctx)
+	default:
+		return nil, fmt.Errorf("ent: unknown Record mutation op: %q", m.Op())
 	}
 }
 
@@ -309,9 +437,9 @@ func (c *UserClient) mutate(ctx context.Context, m *UserMutation) (Value, error)
 // hooks and interceptors per client, for fast access.
 type (
 	hooks struct {
-		User []ent.Hook
+		Record, User []ent.Hook
 	}
 	inters struct {
-		User []ent.Interceptor
+		Record, User []ent.Interceptor
 	}
 )

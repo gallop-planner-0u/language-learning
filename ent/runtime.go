@@ -3,6 +3,7 @@
 package ent
 
 import (
+	"language-learning/ent/record"
 	"language-learning/ent/schema"
 	"language-learning/ent/user"
 	"time"
@@ -12,6 +13,12 @@ import (
 // (default values, validators, hooks and policies) and stitches it
 // to their package variables.
 func init() {
+	recordFields := schema.Record{}.Fields()
+	_ = recordFields
+	// recordDescCreatedAt is the schema descriptor for created_at field.
+	recordDescCreatedAt := recordFields[4].Descriptor()
+	// record.DefaultCreatedAt holds the default value on creation for the created_at field.
+	record.DefaultCreatedAt = recordDescCreatedAt.Default.(time.Time)
 	userFields := schema.User{}.Fields()
 	_ = userFields
 	// userDescCreatedAt is the schema descriptor for created_at field.
