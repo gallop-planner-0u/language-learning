@@ -13,12 +13,10 @@ import (
 
 	"github.com/gin-gonic/gin"
 	_ "github.com/lib/pq"
-	"github.com/spf13/viper"
 )
 
 func main() {
 	ctx := context.Background()
-	InitConfig()
 	client := pkg.GetEntClient(ctx)
 	defer client.Close()
 
@@ -34,20 +32,5 @@ func main() {
 	authhandler.RegisterRoutes(r, _authHandler)
 	dictionaryhandler.RegisterHTTPRoutes(r, _dictionaryHandler, _authHandler.AuthMiddleware)
 
-	r.Run(":" + viper.GetString("app.port"))
-}
-
-func InitConfig() {
-	viper.SetConfigName("config")
-	viper.SetConfigType("yaml")
-	configPath := os.Getenv("CONFIG_PATH")
-	if configPath == "" {
-		configPath = "/app/config"
-	}
-	viper.AddConfigPath(configPath)
-
-	err := viper.ReadInConfig()
-	if err != nil {
-		panic(err)
-	}
+	r.Run(":" + os.Getenv("PORT"))
 }
