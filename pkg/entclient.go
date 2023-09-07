@@ -1,17 +1,20 @@
 package pkg
 
 import (
+	"context"
 	"fmt"
 	"language-learning/ent"
 	"os"
-
-	"github.com/spf13/viper"
 )
 
-func GetEntClient() *ent.Client {
+func GetEntClient(ctx context.Context) *ent.Client {
 	connectionString := getConnectionString()
 	client, err := ent.Open("postgres", connectionString)
 	if err != nil {
+		panic(err)
+	}
+
+	if err := client.Schema.Create(ctx); err != nil {
 		panic(err)
 	}
 
@@ -19,19 +22,14 @@ func GetEntClient() *ent.Client {
 }
 
 func getConnectionString() string {
-	dbHost := os.Getenv("DB_HOST")
-	if dbHost == "" {
-		dbHost = viper.GetString("db.host")
-	}
-
 	connectionString := "host=%s port=%d user=%s dbname=%s password=%s sslmode=%s"
 	connectionString = fmt.Sprintf(connectionString,
-		dbHost,
-		viper.GetInt("db.port"),
-		viper.GetString("db.user"),
-		viper.GetString("db.name"),
-		viper.GetString("db.password"),
-		viper.GetString("db.sslmode"))
+		os.Getenv("DB_HOST"),
+		os.Getenv("DB_PORT"),
+		os.Getenv("DB_USER"),
+		os.Getenv("DB_NAME"),
+		os.Getenv("DB_PASSWORD"),
+		os.Getenv("DB_SSLMODE"))
 
 	return connectionString
 }
