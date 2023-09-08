@@ -48,5 +48,9 @@ func (r *Repository) Update(ctx context.Context, userID, id int, updatedRecord *
 }
 
 func (r *Repository) Delete(ctx context.Context, userID, id int) error {
-	return nil
+	_, err := r.client.Record.Delete().Where(
+		sql.FieldEQ(record.FieldID, id),
+		sql.FieldEQ(record.FieldUserID, id)).
+		Exec(ctx)
+	return err
 }
