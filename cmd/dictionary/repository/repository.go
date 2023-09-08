@@ -3,6 +3,10 @@ package repository
 import (
 	"context"
 	"language-learning/ent"
+	"language-learning/ent/record"
+	"time"
+
+	"entgo.io/ent/dialect/sql"
 )
 
 type Repository struct {
@@ -34,7 +38,13 @@ func (r *Repository) Create(ctx context.Context, userID int, newRecord *ent.Reco
 }
 
 func (r *Repository) Update(ctx context.Context, userID, id int, updatedRecord *ent.Record) error {
-	return nil
+	err := r.client.Record.Update().Where(
+		sql.FieldEQ(record.FieldID, id),
+		sql.FieldEQ(record.FieldUserID, userID)).
+		SetWord(updatedRecord.Word).
+		SetTranslation(updatedRecord.Translation).
+		SetUpdatedAt(time.Now()).Exec(ctx)
+	return err
 }
 
 func (r *Repository) Delete(ctx context.Context, userID, id int) error {
