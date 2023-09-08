@@ -34,7 +34,7 @@ func RegisterHTTPRoutes(r *gin.Engine, h *Handler, authMiddleware gin.HandlerFun
 	d.Use(authMiddleware)
 
 	d.GET("/:id", h.GetByID)
-	d.GET("/:id", h.GetByWord)
+	d.GET("/word/:value", h.GetByWord)
 	d.POST("/", h.Create)
 	d.PUT("/:id", h.Update)
 	d.DELETE("/:id", h.Delete)
