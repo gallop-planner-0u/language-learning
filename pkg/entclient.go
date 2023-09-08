@@ -24,7 +24,7 @@ func GetEntClient(ctx context.Context) *ent.Client {
 }
 
 func getConnectionString() string {
-	connectionString := "host=%s port=%d user=%s dbname=%s password=%s sslmode=%s"
+	connectionString := "host=%s port=%s user=%s dbname=%s password=%s sslmode=%s"
 	connectionString = fmt.Sprintf(connectionString,
 		os.Getenv("DB_HOST"),
 		os.Getenv("DB_PORT"),
