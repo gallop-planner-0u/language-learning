@@ -5,6 +5,8 @@ import (
 	"fmt"
 	"language-learning/ent"
 	"os"
+
+	_ "github.com/lib/pq"
 )
 
 func GetEntClient(ctx context.Context) *ent.Client {
