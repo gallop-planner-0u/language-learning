@@ -27,7 +27,7 @@ func (uc *Usecase) SignUp(ctx context.Context, user *ent.User) (int, error) {
 	_sha256 := sha256.New()
 	_sha256.Write([]byte(uc.signingKey))
 	_sha256.Write([]byte(user.PasswordHash))
-	user.PasswordHash = string(_sha256.Sum(nil))
+	user.PasswordHash = fmt.Sprintf("%x", _sha256.Sum(nil))
 	return uc.repo.Create(ctx, user)
 }
 
@@ -35,7 +35,7 @@ func (uc *Usecase) SignIn(ctx context.Context, username, password string) (strin
 	_sha256 := sha256.New()
 	_sha256.Write([]byte(uc.signingKey))
 	_sha256.Write([]byte(password))
-	password = string(_sha256.Sum(nil))
+	password = fmt.Sprintf("%x", _sha256.Sum(nil))
 	user, err := uc.repo.Get(ctx, username, password)
 	accessToken, err := uc.GenerateToken(ctx, user)
 	if err != nil {
@@ -53,6 +53,10 @@ func (uc *Usecase) ParseToken(accessToken string) (*models.CustomClaims, error) 
 
 		return uc.signingKey, nil
 	})
+
+	if err != nil {
+		return nil, err
+	}
 
 	if claims, ok := token.Claims.(*models.CustomClaims); ok && token.Valid {
 		return claims, nil
