@@ -15,8 +15,8 @@ const (
 	FieldID = "id"
 	// FieldUsername holds the string denoting the username field in the database.
 	FieldUsername = "username"
-	// FieldPasswordHash holds the string denoting the password_hash field in the database.
-	FieldPasswordHash = "password_hash"
+	// FieldPassword holds the string denoting the password field in the database.
+	FieldPassword = "password"
 	// FieldName holds the string denoting the name field in the database.
 	FieldName = "name"
 	// FieldCreatedAt holds the string denoting the created_at field in the database.
@@ -29,7 +29,7 @@ const (
 var Columns = []string{
 	FieldID,
 	FieldUsername,
-	FieldPasswordHash,
+	FieldPassword,
 	FieldName,
 	FieldCreatedAt,
 }
@@ -62,9 +62,9 @@ func ByUsername(opts ...sql.OrderTermOption) OrderOption {
 	return sql.OrderByField(FieldUsername, opts...).ToFunc()
 }
 
-// ByPasswordHash orders the results by the password_hash field.
-func ByPasswordHash(opts ...sql.OrderTermOption) OrderOption {
-	return sql.OrderByField(FieldPasswordHash, opts...).ToFunc()
+// ByPassword orders the results by the password field.
+func ByPassword(opts ...sql.OrderTermOption) OrderOption {
+	return sql.OrderByField(FieldPassword, opts...).ToFunc()
 }
 
 // ByName orders the results by the name field.

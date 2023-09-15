@@ -17,7 +17,7 @@ func (User) Fields() []ent.Field {
 	return []ent.Field{
 		field.Int("id").Unique(),
 		field.String("username").Unique(),
-		field.String("password_hash"),
+		field.String("password"),
 		field.String("name"),
 		field.Time("created_at").
 			Default(time.Now()).

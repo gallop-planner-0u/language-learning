@@ -28,8 +28,8 @@ func New(repo auth.Repository) *Usecase {
 func (uc *Usecase) SignUp(ctx context.Context, user *ent.User) (int, error) {
 	_sha256 := sha256.New()
 	_sha256.Write([]byte(uc.signingKey))
-	_sha256.Write([]byte(user.PasswordHash))
-	user.PasswordHash = fmt.Sprintf("%x", _sha256.Sum(nil))
+	_sha256.Write([]byte(user.Password))
+	user.Password = fmt.Sprintf("%x", _sha256.Sum(nil))
 	return uc.repo.Create(ctx, user)
 }
 
