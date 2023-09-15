@@ -7,6 +7,7 @@ import (
 	"language-learning/cmd/auth"
 	"language-learning/ent"
 	"language-learning/models"
+	"os"
 	"time"
 
 	"github.com/golang-jwt/jwt/v5"
@@ -19,7 +20,8 @@ type Usecase struct {
 
 func New(repo auth.Repository) *Usecase {
 	return &Usecase{
-		repo: repo,
+		repo:       repo,
+		signingKey: os.Getenv("APP_SECRET_KEY"),
 	}
 }
 
