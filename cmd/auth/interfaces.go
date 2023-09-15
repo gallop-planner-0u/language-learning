@@ -2,8 +2,13 @@ package auth
 
 import (
 	"context"
+	"errors"
 	"language-learning/ent"
 	"language-learning/models"
+)
+
+var (
+	ErrDublicateKey = errors.New("pq: ")
 )
 
 type Repository interface {
